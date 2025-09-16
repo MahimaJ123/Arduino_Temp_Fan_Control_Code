@@ -1,8 +1,8 @@
 // NTC sensor (10k) on A0 with 10k resistor divider
 // LED on D13 as fan simulation (software PWM)
 
-const int sensorPin = A0;   // NTC divider output
-const int fanPin = 13;      // LED simulating fan
+const int sensor_pin = A0;   // NTC divider output
+const int fan_pin = 13;      // LED simulating fan
 
 // NTC parameters (for 10k NTC thermistor)
 const float R_FIXED = 10000.0;   // fixed resistor 10k (ohms)
@@ -11,13 +11,13 @@ const float T0 = 298.15;         // 25°C in Kelvin
 const float BETA = 3950.0;       // Beta value (typical)
 
 void setup() {
-  pinMode(fanPin, OUTPUT);
+  pinMode(fan_pin, OUTPUT);
   Serial.begin(9600);
 }
 
 // ---- Function to read real temperature from NTC ----
 float readTemp() {
-  int adc = analogRead(sensorPin);   // 0–1023
+  int adc = analogRead(sensor_pin);   // 0–1023
   if (adc <= 0) adc = 1;             // avoid /0
   if (adc >= 1023) adc = 1022;
 
@@ -25,23 +25,23 @@ float readTemp() {
   float Rntc = R_FIXED * (1023.0 / adc - 1.0);
 
   // Beta equation: 1/T = 1/T0 + (ln(R/R0)/BETA)
-  float tKelvin = 1.0 / ( (1.0 / T0) + (log(Rntc / R0) / BETA) );
-  return tKelvin - 273.15;   // Convert to °C
+  float t_kelvin = 1.0 / ( (1.0 / T0) + (log(Rntc / R0) / BETA) );
+  return t_kelvin - 273.15;   // Convert to °C
 }
 
 // ---- Software PWM for D13 ----
-void softPWM(int duty) {
+void soft_PWM(int duty) {
   int period = 20;                         // ms per cycle (~50 Hz)
-  int onTime = (period * duty) / 100;
-  int offTime = period - onTime;
+  int on_time = (period * duty) / 100;
+  int off_time = period - on_time;
 
   if (duty > 0) {
-    digitalWrite(fanPin, HIGH);
-    delay(onTime);
+    digitalWrite(fan_pin, HIGH);
+    delay(on_time);
   }
   if (duty < 100) {
-    digitalWrite(fanPin, LOW);
-    delay(offTime);
+    digitalWrite(fan_pin, LOW);
+    delay(off_time);
   }
 }
 
@@ -68,6 +68,7 @@ void loop() {
   // Run PWM for ~1 second
   unsigned long start = millis();
   while (millis() - start < 1000) {
-    softPWM(duty);
+    soft_PWM(duty);
   }
 }
+
